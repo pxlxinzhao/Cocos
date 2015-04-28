@@ -15,7 +15,96 @@ var SampleObj = cc.Node.extend({
 	},
 });
 
+function addGravity(sprite){
+	accelerateBySin(1, 0, -1000, sprite);
+}
 
+function jumpUp(sprite, timeRatio){
+	decelerateBySin(1, 0, 100, sprite);
+	gravitate(sprite);
+}
+
+function gravitate(sprite, timeRatio, reverse){
+	var direction;
+	if (reverse === true){
+		direction = 1;
+	}else {
+		direction = -1;
+	}
+	if (!timeRatio){
+		timeRatio = 1;
+	}
+	timeRatio = timeRatio / 20;
+	var speed = 0;
+	var ratio = 1;
+	var time = 0.1;
+	var acceleration_action =  createGetActionSequence50(getAction);
+	sprite.runAction(acceleration_action);
+	function getAction(){
+		speed += ratio;
+		var move_action = new cc.MoveBy(timeRatio, cc.p(0, direction * speed));
+		return move_action;
+	}
+}
+
+function accelerateBySin(time, x, y, sprite){
+	var small_time = time/ACCELERATION_SEPARATION_LEVEL;
+	var small_distance_array_x = accelerationSeperation(x);
+	var small_distance_array_y = accelerationSeperation(y);
+
+	var acceleration_action =  createGetActionSequence50(getAction);
+	sprite.runAction(acceleration_action);
+	function getAction(){
+		var move_action = new cc.MoveBy(small_time, cc.p(small_distance_array_x.shift(), small_distance_array_y.shift()));
+		return move_action;
+	}
+}
+
+function decelerateBySin(time, x, y, sprite){
+	var small_time = time/ACCELERATION_SEPARATION_LEVEL;
+	var small_distance_array_x = accelerationSeperation(x);
+	var small_distance_array_y = accelerationSeperation(y);
+
+	var acceleration_action =  createGetActionSequence50(getAction);
+	sprite.runAction(acceleration_action);
+	function getAction(){
+		var move_action = new cc.MoveBy(small_time, cc.p(small_distance_array_x.pop(), small_distance_array_y.pop()));
+		return move_action;
+	}
+}
+
+function accelerationSeperation(number){
+	var newArray = [];
+	var array = [];
+	var total = 0;
+	var pi = Math.PI;
+	for (var i=1; i<= ACCELERATION_SEPARATION_LEVEL; i++){
+		var cur =  Math.sin(pi/2/i) ;
+		array.push(cur); 
+		total += cur;
+	}
+	var newValue = number * total;
+	for (var i=1; i<= ACCELERATION_SEPARATION_LEVEL; i++){
+		newArray.push((array.pop()/total)*number);
+	}
+	return newArray;
+}
+
+function createGetActionSequence50(getAction){
+	//-- getAction times == ACCELERATION_SEPARATION_LEVEL
+	return new cc.Sequence(
+			getAction(),getAction(),getAction(), getAction(),getAction(),
+			getAction(),getAction(), getAction(),getAction(),getAction(),
+			getAction(),getAction(),getAction(), getAction(),getAction(),
+			getAction(),getAction(), getAction(),getAction(),getAction(),
+			getAction(),getAction(),getAction(), getAction(),getAction(),
+			getAction(),getAction(), getAction(),getAction(),getAction(),
+			getAction(),getAction(),getAction(), getAction(),getAction(),
+			getAction(),getAction(), getAction(),getAction(),getAction(),
+			getAction(),getAction(),getAction(), getAction(),getAction(),
+			getAction(),getAction(), getAction(),getAction(),getAction()
+	);
+}
 
 //-- Use repeat and sequence
 
@@ -44,8 +133,8 @@ function touchScreenEdge(sprite, callback){
 }
 
 //-- random value
-function randValue(){
-	return 
+function randValue(number){
+	return Math.random() * number;
 }
 
 //-- key pressed
@@ -59,6 +148,6 @@ KEYCODE = {
 		enter: 13,
 	    w: 87,
 	    s: 83,
-	    a:65,
+	    a: 65,
 	    d: 68
 }
